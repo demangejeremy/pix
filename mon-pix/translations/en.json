@@ -72,6 +72,10 @@
     }
   }, 
 
+  "certification-banner": {
+    "certification-number": "Certification N°"
+  },
+
   "certification-joiner": {
     "congratulation-banner": {
       "congrats": "Congratulations ",
