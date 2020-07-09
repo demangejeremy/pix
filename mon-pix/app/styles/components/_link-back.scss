@@ -1,0 +1,32 @@
+.pix-link-back {
+  font-size: 0.813rem;
+  font-weight: $font-semi-bold;
+  letter-spacing: 0.019rem;
+  display: inline-flex;
+  align-items: center;
+
+  &:hover { text-decoration: none; }
+
+  .pix-link-back__icon {
+    margin-right: 8px;
+    padding: 4px 8px;
+    font-size: 1rem;
+    transition: 0.2s ease;
+    border-radius: 50%;
+  }
+
+  @mixin coloriseLink($textColor, $arrowColor, $arrowBgHoverColor) {
+    color: $textColor;
+
+    .pix-link-back__icon { color: $arrowColor; }
+
+    &:hover {
+      .pix-link-back__icon {
+        background-color: $arrowBgHoverColor;
+      }
+    }
+  }
+
+  &--white { @include coloriseLink($white, $white, $grey-30); }
+  &--black { @include coloriseLink($grey-200, $grey-60, $grey-20); }
+}
