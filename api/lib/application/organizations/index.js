@@ -164,6 +164,33 @@ exports.register = async (server) => {
         notes: [
           '- **Cette route est restreinte aux utilisateurs authentifiés et responsables de l\'organisation**\n' +
           '- Elle permet d\'importer des inscriptions d\'élèves, en masse, depuis un fichier au format SIECLE\n' +
+          '- Elle ne retourne aucune valeur de retour' +
+          '- L\'utilisation de cette route est dépréciée. Utiliser \'/api/organizations/{id}/sco/import-students\''
+        ],
+        tags: ['api', 'students']
+      }
+    },
+    {
+      method: 'POST',
+      path: '/api/organizations/{id}/SCO/import-students',
+      config: {
+        pre: [{
+          method: securityPreHandlers.checkUserIsAdminInOrganizationManagingStudents,
+          assign: 'isAdminInOrganizationManagingStudents'
+        }],
+        validate: {
+          params: Joi.object({
+            id: Joi.number().integer().required()
+          }),
+        },
+        payload: {
+          maxBytes: 1048576 * 10, // 10MB
+          parse: 'gunzip',
+        },
+        handler: organizationController.importSchoolingRegistrationsFromSIECLE,
+        notes: [
+          '- **Cette route est restreinte aux utilisateurs authentifiés et responsables de l\'organisation**\n' +
+          '- Elle permet d\'importer des inscriptions d\'élèves, en masse, depuis un fichier au format SIECLE\n' +
           '- Elle ne retourne aucune valeur de retour'
         ],
         tags: ['api', 'students']
@@ -182,6 +209,11 @@ exports.register = async (server) => {
           parse: 'gunzip',
         },
         handler: organizationController.importSuperiorSchoolingRegistrations,
+        notes: [
+          '- **Cette route est restreinte aux utilisateurs authentifiés et responsables de l\'organisation**\n' +
+          '- Elle permet d\'importer des inscriptions d\'élèves, en masse, depuis un fichier au format csv\n' +
+          '- Elle ne retourne aucune valeur de retour'
+        ],
         tags: ['api', 'students']
       }
     },
