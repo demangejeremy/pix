@@ -126,7 +126,7 @@ const userCompetences = [
   _buildUserCompetence(competence_4, pixForCompetence4, 4),
 ];
 
-describe('Unit | Service | Certification Result Service', function() {
+describe.only('Unit | Service | Certification Result Service', function() {
 
   describe('#getCertificationResult', () => {
     let certificationAssessment;
@@ -139,6 +139,44 @@ describe('Unit | Service | Certification Result Service', function() {
       state: states.COMPLETED,
       isV2Certification: true,
     };
+
+    const expectedCertifiedCompetences = [{
+      index: '1.1',
+      area_code: '1',
+      id: 'competence_1',
+      name: 'Mener une recherche',
+      obtainedLevel: UNCERTIFIED_LEVEL,
+      positionedLevel: 1,
+      positionedScore: 10,
+      obtainedScore: 0,
+    }, {
+      index: '2.2',
+      area_code: '2',
+      id: 'competence_2',
+      name: 'Partager',
+      obtainedLevel: UNCERTIFIED_LEVEL,
+      positionedLevel: 2,
+      positionedScore: 20,
+      obtainedScore: 0,
+    }, {
+      index: '3.3',
+      area_code: '3',
+      id: 'competence_3',
+      name: 'Adapter',
+      obtainedLevel: UNCERTIFIED_LEVEL,
+      positionedLevel: 3,
+      positionedScore: 30,
+      obtainedScore: 0,
+    }, {
+      index: '4.4',
+      area_code: '4',
+      id: 'competence_4',
+      name: 'Résoudre',
+      obtainedLevel: UNCERTIFIED_LEVEL,
+      positionedLevel: 4,
+      positionedScore: 40,
+      obtainedScore: 0,
+    }];
 
     describe('Compute certification result for jury (continue on error)', () => {
       const continueOnError = true;
@@ -209,44 +247,6 @@ describe('Unit | Service | Certification Result Service', function() {
         });
 
         it('should return list of competences with all certifiedLevel at -1', async () => {
-          const expectedCertifiedCompetences = [{
-            index: '1.1',
-            area_code: '1',
-            id: 'competence_1',
-            name: 'Mener une recherche',
-            obtainedLevel: UNCERTIFIED_LEVEL,
-            positionedLevel: 1,
-            positionedScore: 10,
-            obtainedScore: 0,
-          }, {
-            index: '2.2',
-            area_code: '2',
-            id: 'competence_2',
-            name: 'Partager',
-            obtainedLevel: UNCERTIFIED_LEVEL,
-            positionedLevel: 2,
-            positionedScore: 20,
-            obtainedScore: 0,
-          }, {
-            index: '3.3',
-            area_code: '3',
-            id: 'competence_3',
-            name: 'Adapter',
-            obtainedLevel: UNCERTIFIED_LEVEL,
-            positionedLevel: 3,
-            positionedScore: 30,
-            obtainedScore: 0,
-          }, {
-            index: '4.4',
-            area_code: '4',
-            id: 'competence_4',
-            name: 'Résoudre',
-            obtainedLevel: UNCERTIFIED_LEVEL,
-            positionedLevel: 4,
-            positionedScore: 40,
-            obtainedScore: 0,
-          }];
-
           // when
           const result = await certificationResultService.getCertificationResult({
             certificationAssessment: startedCertificationAssessment,
@@ -255,6 +255,30 @@ describe('Unit | Service | Certification Result Service', function() {
 
           // then
           expect(result.competencesWithMark).to.deep.equal(expectedCertifiedCompetences);
+        });
+
+        describe('When a user is certifiable for a non pix competence', () => {
+          it('Doesn\'t show the non pix competence in the result', async () => {
+            const userCompetencesWithNonPixCompetence = userCompetences.concat(_buildUserCompetence(competence_5, 50, 5));
+            userService.getCertificationProfile.withArgs({
+              userId: startedCertificationAssessment.userId,
+              limitDate: startedCertificationAssessment.createdAt,
+              isV2Certification: startedCertificationAssessment.isV2Certification,
+              competences: competencesFromAirtable,
+            }).resolves({ userCompetencesWithNonPixCompetence });
+    
+            // when
+            const result = await certificationResultService.getCertificationResult({ certificationAssessment: startedCertificationAssessment, continueOnError});
+    
+            console.log({'USERCOMPETENCES':userCompetencesWithNonPixCompetence });
+    
+            console.log({'RESULT': result });
+
+            console.log({'RESULTCOMP': result.competencesWithMark });
+    
+            // then
+            expect(result.competencesWithMark).to.deep.equal(expectedCertifiedCompetences);        
+          });
         });
       });
 
@@ -269,44 +293,6 @@ describe('Unit | Service | Certification Result Service', function() {
         });
 
         it('should return list of competences with all certifiedLevel at -1', async () => {
-          const expectedCertifiedCompetences = [{
-            index: '1.1',
-            area_code: '1',
-            id: 'competence_1',
-            name: 'Mener une recherche',
-            obtainedLevel: UNCERTIFIED_LEVEL,
-            positionedLevel: 1,
-            positionedScore: 10,
-            obtainedScore: 0,
-          }, {
-            index: '2.2',
-            area_code: '2',
-            id: 'competence_2',
-            name: 'Partager',
-            obtainedLevel: UNCERTIFIED_LEVEL,
-            positionedLevel: 2,
-            positionedScore: 20,
-            obtainedScore: 0,
-          }, {
-            index: '3.3',
-            area_code: '3',
-            id: 'competence_3',
-            name: 'Adapter',
-            obtainedLevel: UNCERTIFIED_LEVEL,
-            positionedLevel: 3,
-            positionedScore: 30,
-            obtainedScore: 0,
-          }, {
-            index: '4.4',
-            area_code: '4',
-            id: 'competence_4',
-            name: 'Résoudre',
-            obtainedLevel: UNCERTIFIED_LEVEL,
-            positionedLevel: 4,
-            positionedScore: 40,
-            obtainedScore: 0,
-          }];
-
           // when
           const result = await certificationResultService.getCertificationResult({ certificationAssessment, continueOnError });
 
