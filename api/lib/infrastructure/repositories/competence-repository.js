@@ -7,6 +7,7 @@ const competenceDatasource = require('../datasources/airtable/competence-datasou
 const knowledgeElementRepository = require('./knowledge-element-repository');
 const scoringService = require('../../domain/services/scoring/scoring-service');
 const { NotFoundError } = require('../../domain/errors');
+const { FRENCH_FRANCE, ENGLISH_SPOKEN } = require('../../../domain/constants').LOCALE;
 
 const PixOriginName = 'Pix';
 
@@ -29,7 +30,7 @@ function _toDomain(competenceData, areaDatas, locale) {
 }
 
 function _getTranslatedText(locale, frenchText, englishText) {
-  if (locale === 'en') {
+  if (locale === ENGLISH_SPOKEN) {
     return englishText;
   }
 
@@ -38,13 +39,13 @@ function _getTranslatedText(locale, frenchText, englishText) {
 
 module.exports = {
 
-  list() {
-    return _list();
+  list(locale) {
+    return _list({ locale: locale || FRENCH_FRANCE });
   },
 
-  listPixCompetencesOnly() {
+  listPixCompetencesOnly({ locale } = { locale: FRENCH_FRANCE }) {
 
-    return _list().then((competences) =>
+    return _list({ locale }).then((competences) =>
       competences.filter((competence) => competence.origin === PixOriginName)
     );
   },
@@ -87,11 +88,11 @@ module.exports = {
 
 };
 
-function _list() {
+function _list({ locale }) {
   return Promise.all([competenceDatasource.list(), areaDatasource.list()])
     .then(([competenceDatas, areaDatas]) => {
       return _.sortBy(
-        competenceDatas.map((competenceData) => _toDomain(competenceData, areaDatas)),
+        competenceDatas.map((competenceData) => _toDomain(competenceData, areaDatas, locale)),
         'index'
       );
     });
