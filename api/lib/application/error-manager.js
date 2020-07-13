@@ -200,6 +200,9 @@ function _mapToHttpError(error) {
   if (error instanceof DomainErrors.UserNotMemberOfOrganizationError) {
     return new HttpErrors.UnprocessableEntityError(error.message);
   }
+  if (error instanceof DomainErrors.AlreadyExistingSchoolingRegistration) {
+    return new HttpErrors.ConflictError();
+  }
 
   return new HttpErrors.BaseHttpError(error.message);
 }
