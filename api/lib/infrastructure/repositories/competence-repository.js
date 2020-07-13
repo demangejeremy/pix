@@ -10,22 +10,30 @@ const { NotFoundError } = require('../../domain/errors');
 
 const PixOriginName = 'Pix';
 
-function _toDomain(competenceData, areaDatas) {
+function _toDomain(competenceData, areaDatas, locale) {
   const areaData = competenceData.areaId && _.find(areaDatas, { id: competenceData.areaId });
   return new Competence({
     id: competenceData.id,
-    name: competenceData.name,
+    name: _getTranslatedText(locale, competenceData.nameFrFr, competenceData.nameEnUs),
     index: competenceData.index,
-    description: competenceData.description,
+    description: _getTranslatedText(locale, competenceData.descriptionFrFr, competenceData.descriptionEnUs),
     origin: competenceData.origin,
     skillIds: competenceData.skillIds,
     area: areaData && new Area({
       id: areaData.id,
       code: areaData.code,
-      title: areaData.titleFrFr,
+      title: _getTranslatedText(locale, areaData.titleFrFr, areaData.titleEnUs),
       color: areaData.color,
     }),
   });
+}
+
+function _getTranslatedText(locale, frenchText, englishText) {
+  if (locale === 'en') {
+    return englishText;
+  }
+
+  return frenchText;
 }
 
 module.exports = {
@@ -41,10 +49,10 @@ module.exports = {
     );
   },
 
-  async get(id) {
+  async get(id, locale) {
     try {
       const [competenceData, areaDatas] = await Promise.all([competenceDatasource.get(id), areaDatasource.list()]);
-      return _toDomain(competenceData, areaDatas);
+      return _toDomain(competenceData, areaDatas, locale);
     } catch (err) {
       if (err instanceof AirtableNotFoundError) {
         throw new NotFoundError('La compétence demandée n’existe pas');
