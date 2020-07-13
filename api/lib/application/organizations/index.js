@@ -171,6 +171,22 @@ exports.register = async (server) => {
     },
     {
       method: 'POST',
+      path: '/api/organizations/{id}/sup/import-students',
+      config: {
+        pre: [{
+          method: securityPreHandlers.checkUserIsAdminInOrganizationManagingStudents,
+          assign: 'isAdminInOrganizationManagingStudents'
+        }],
+        payload: {
+          maxBytes: 1048576 * 10, // 10MB
+          parse: 'gunzip',
+        },
+        handler: organizationController.importSuperiorSchoolingRegistrations,
+        tags: ['api', 'students']
+      }
+    },
+    {
+      method: 'POST',
       path: '/api/organizations/{id}/invitations',
       config: {
         pre: [{

@@ -7,6 +7,7 @@ const organizationSerializer = require('../../infrastructure/serializers/jsonapi
 const organizationInvitationSerializer = require('../../infrastructure/serializers/jsonapi/organization-invitation-serializer');
 const targetProfileSerializer = require('../../infrastructure/serializers/jsonapi/target-profile-serializer');
 const userWithSchoolingRegistrationSerializer = require('../../infrastructure/serializers/jsonapi/user-with-schooling-registration-serializer');
+const SuperiorSchoolingRegistrationParser = require('../../infrastructure/serializers/csv/superior-schooling-registration-parser');
 const queryParamsUtils = require('../../infrastructure/utils/query-params-utils');
 const { extractLocaleFromRequest } = require('../../infrastructure/utils/request-response-utils');
 
@@ -106,6 +107,14 @@ module.exports = {
 
     return usecases.importSchoolingRegistrationsFromSIECLE({ organizationId, buffer })
       .then(() => null);
+  },
+
+  async importSuperiorSchoolingRegistrations(request, h) {
+    const organizationId = parseInt(request.params.id);
+    const buffer = request.payload;
+    const superiorSchoolingRegistrationParser = new SuperiorSchoolingRegistrationParser(buffer);
+    await usecases.importSuperiorSchoolingRegistrations({ organizationId:  organizationId, superiorSchoolingRegistrationParser: superiorSchoolingRegistrationParser });
+    return h.response({}).code(201);
   },
 
   async sendInvitations(request, h) {
