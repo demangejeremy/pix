@@ -29,7 +29,7 @@ module.exports = function buildSchoolingRegistration({
   diploma = faker.name.jobType(),
   studyScheme = faker.name.title(),
   organizationId,
-  userId,
+  userId
 } = {}) {
   organizationId = _.isUndefined(organizationId) ? buildOrganization().id : organizationId;
   userId = _.isUndefined(userId) ? buildUser().id : userId;
@@ -56,8 +56,8 @@ module.exports = function buildSchoolingRegistration({
     department,
     group,
     diploma,
-    organizationId,
     studyScheme,
+    organizationId,
     userId,
   };
 
