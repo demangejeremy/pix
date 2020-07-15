@@ -126,7 +126,7 @@ const userCompetences = [
   _buildUserCompetence(competence_4, pixForCompetence4, 4),
 ];
 
-describe.only('Unit | Service | Certification Result Service', function() {
+describe('Unit | Service | Certification Result Service', function() {
 
   describe('#getCertificationResult', () => {
     let certificationAssessment;
@@ -140,7 +140,7 @@ describe.only('Unit | Service | Certification Result Service', function() {
       isV2Certification: true,
     };
 
-    const expectedCertifiedCompetences = [{
+    const competenceWithMarks_1_1 = {
       index: '1.1',
       area_code: '1',
       id: 'competence_1',
@@ -149,7 +149,9 @@ describe.only('Unit | Service | Certification Result Service', function() {
       positionedLevel: 1,
       positionedScore: 10,
       obtainedScore: 0,
-    }, {
+    };
+
+    const competenceWithMarks_2_2 = {
       index: '2.2',
       area_code: '2',
       id: 'competence_2',
@@ -158,7 +160,9 @@ describe.only('Unit | Service | Certification Result Service', function() {
       positionedLevel: 2,
       positionedScore: 20,
       obtainedScore: 0,
-    }, {
+    };
+
+    const competenceWithMarks_3_3 = {
       index: '3.3',
       area_code: '3',
       id: 'competence_3',
@@ -167,7 +171,9 @@ describe.only('Unit | Service | Certification Result Service', function() {
       positionedLevel: 3,
       positionedScore: 30,
       obtainedScore: 0,
-    }, {
+    };
+
+    const competenceWithMarks_4_4 = {
       index: '4.4',
       area_code: '4',
       id: 'competence_4',
@@ -176,7 +182,14 @@ describe.only('Unit | Service | Certification Result Service', function() {
       positionedLevel: 4,
       positionedScore: 40,
       obtainedScore: 0,
-    }];
+    };
+
+    const expectedCertifiedCompetences = [
+      competenceWithMarks_1_1,
+      competenceWithMarks_2_2,
+      competenceWithMarks_3_3,
+      competenceWithMarks_4_4,
+    ];
 
     describe('Compute certification result for jury (continue on error)', () => {
       const continueOnError = true;
@@ -228,7 +241,6 @@ describe.only('Unit | Service | Certification Result Service', function() {
         beforeEach(() => {
           startedCertificationAssessment =  new CertificationAssessment({
             ...certificationAssessment,
-            certificationAnswers: [],
             completedAt: null,
             state: states.STARTED
           });
@@ -328,40 +340,20 @@ describe.only('Unit | Service | Certification Result Service', function() {
           // given
           const expectedCertifiedCompetences = [
             {
-              index: '1.1',
-              area_code: '1',
-              id: 'competence_1',
-              name: 'Mener une recherche',
+              ...competenceWithMarks_1_1,
               obtainedLevel: 1,
-              positionedLevel: 1,
-              positionedScore: 10,
               obtainedScore: pixForCompetence1,
             }, {
-              index: '2.2',
-              area_code: '2',
-              id: 'competence_2',
-              name: 'Partager',
+              ...competenceWithMarks_2_2,
               obtainedLevel: 2,
-              positionedLevel: 2,
-              positionedScore: 20,
               obtainedScore: pixForCompetence2,
             }, {
-              index: '3.3',
-              area_code: '3',
-              id: 'competence_3',
-              name: 'Adapter',
+              ...competenceWithMarks_3_3,
               obtainedLevel: 3,
-              positionedLevel: 3,
-              positionedScore: 30,
               obtainedScore: pixForCompetence3,
             }, {
-              index: '4.4',
-              area_code: '4',
-              id: 'competence_4',
-              name: 'Résoudre',
+              ...competenceWithMarks_4_4,
               obtainedLevel: 4,
-              positionedLevel: 4,
-              positionedScore: 40,
               obtainedScore: pixForCompetence4,
             },
           ];
@@ -388,42 +380,19 @@ describe.only('Unit | Service | Certification Result Service', function() {
           // given
           certificationAssessment.certificationAnswersByDate = answersToHaveOnlyTheLastCompetenceFailed();
           const expectedCertifiedCompetences = [{
-            index: '1.1',
-            area_code: '1',
-            id: 'competence_1',
-            name: 'Mener une recherche',
+            ...competenceWithMarks_1_1,
             obtainedLevel: 1,
-            positionedLevel: 1,
-            positionedScore: 10,
             obtainedScore: pixForCompetence1,
           }, {
-            index: '2.2',
-            area_code: '2',
-            id: 'competence_2',
-            name: 'Partager',
+            ...competenceWithMarks_2_2,
             obtainedLevel: 2,
-            positionedLevel: 2,
-            positionedScore: 20,
             obtainedScore: pixForCompetence2,
           }, {
-            index: '3.3',
-            area_code: '3',
-            id: 'competence_3',
-            name: 'Adapter',
+            ...competenceWithMarks_3_3,
             obtainedLevel: 3,
-            positionedLevel: 3,
-            positionedScore: 30,
             obtainedScore: pixForCompetence3,
           }, {
-            index: '4.4',
-            area_code: '4',
-            id: 'competence_4',
-            name: 'Résoudre',
-            obtainedLevel: UNCERTIFIED_LEVEL,
-
-            positionedLevel: 4,
-            positionedScore: 40,
-            obtainedScore: 0,
+            ...competenceWithMarks_4_4,
           }];
 
           // when
