@@ -3,6 +3,7 @@ const bluebird = require('bluebird');
 const { NotFoundError, SameNationalStudentIdInOrganizationError, SchoolingRegistrationsCouldNotBeSavedError } = require('../../domain/errors');
 const UserWithSchoolingRegistration = require('../../domain/models/UserWithSchoolingRegistration');
 const SchoolingRegistration = require('../../domain/models/SchoolingRegistration');
+const studentRepository = require('./student-repository');
 
 const Bookshelf = require('../bookshelf');
 const BookshelfSchoolingRegistration = require('../data/schooling-registration');
@@ -55,11 +56,22 @@ module.exports = {
     const trx = await Bookshelf.knex.transaction();
 
     try {
+      const nationalStudentIdsFromFile = schoolingRegistrationDatas.map((schoolingRegistrationData) => schoolingRegistrationData.nationalStudentId);
+      const students = await studentRepository.findReconciledStudentsByNationalStudentId(nationalStudentIdsFromFile);
 
       const schoolingRegistrations = _.map(schoolingRegistrationDatas, (schoolingRegistrationData) => new SchoolingRegistration({ ...schoolingRegistrationData, organizationId }));
       const schoolingRegistrationsFromOrganization = await this.findByOrganizationId({ organizationId });
-      const nationalStudentIdsFromOrganization = _.map(schoolingRegistrationsFromOrganization, 'nationalStudentId');
-      const [ schoolingRegistrationsToUpdate, schoolingRegistrationsToCreate ] = _.partition(schoolingRegistrations, (schoolingRegistration) => _.includes(nationalStudentIdsFromOrganization, schoolingRegistration.nationalStudentId));
+
+      const [ schoolingRegistrationsToUpdate, schoolingRegistrationsToCreate ] = _.partition(schoolingRegistrations, (schoolingRegistration) => {
+        const schoolingRegistrationFromOrganization = _.find(schoolingRegistrationsFromOrganization, (schoolingRegistrationFromOrganization) => schoolingRegistrationFromOrganization.nationalStudentId === schoolingRegistration.nationalStudentId);
+        if (!schoolingRegistrationFromOrganization || (schoolingRegistrationFromOrganization && !schoolingRegistrationFromOrganization.userId)) {
+          const student = _.find(students, (student) => student.nationalStudentId === schoolingRegistration.nationalStudentId);
+          if (student) {
+            schoolingRegistration.userId = student.getAppropriateAccount().userId;
+          }
+        }
+        return !!schoolingRegistrationFromOrganization;
+      });
 
       await bluebird.mapSeries(schoolingRegistrationsToUpdate, async (schoolingRegistrationToUpdate) => {
         await trx('schooling-registrations')
@@ -80,6 +92,21 @@ module.exports = {
       }
       throw new SchoolingRegistrationsCouldNotBeSavedError();
     }
+  },
+
+  findReconciledByNationalStudentId(nationalStudentIds) {
+    return BookshelfSchoolingRegistration
+      .where('userId', '<>', null)
+      .where('nationalStudentId', 'in', nationalStudentIds)
+      .fetchAll()
+      .then((schoolingRegistrations) => schoolingRegistrations.reduce((acc, current) => {
+        const nationalStudentId = current.nationalStudentId;
+        if (acc.has(nationalStudentId)) {
+          acc.get(nationalStudentId).push(current);
+        } else {
+          acc.set(nationalStudentId, [current]);
+        }
+      }, new Map()));
   },
 
   findByOrganizationIdAndUserBirthdate({ organizationId, birthdate }) {

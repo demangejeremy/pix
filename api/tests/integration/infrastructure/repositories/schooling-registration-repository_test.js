@@ -1,7 +1,9 @@
-const { expect, databaseBuilder, knex, catchErr } = require('../../../test-helper');
+const { expect, databaseBuilder, knex, catchErr, sinon } = require('../../../test-helper');
 const _ = require('lodash');
 const schoolingRegistrationRepository = require('../../../../lib/infrastructure/repositories/schooling-registration-repository');
+const studentRepository = require('../../../../lib/infrastructure/repositories/student-repository');
 const SchoolingRegistration = require('../../../../lib/domain/models/SchoolingRegistration');
+const Student = require('../../../../lib/domain/models/Student');
 const UserWithSchoolingRegistration = require('../../../../lib/domain/models/UserWithSchoolingRegistration');
 
 const { NotFoundError, SameNationalStudentIdInOrganizationError } = require('../../../../lib/domain/errors');
@@ -84,6 +86,10 @@ describe('Integration | Infrastructure | Repository | schooling-registration-rep
   });
 
   describe('#addOrUpdateOrganizationSchoolingRegistrations', () => {
+
+    beforeEach(() => {
+      sinon.stub(studentRepository, 'findReconciledStudentsByNationalStudentId');
+    });
 
     context('when there are only schoolingRegistrations to create', () => {
 
@@ -249,6 +255,84 @@ describe('Integration | Infrastructure | Repository | schooling-registration-rep
         });
       });
 
+    });
+
+    context('when there are schoolingRegistrations in other organization', () => {
+      let schoolingRegistrationInOtherOrganization, schoolingRegistrations;
+      let organizationId;
+      let schoolingRegistrationFromFile;
+      let userId;
+      let nationalStudentId;
+
+      beforeEach(async () => {
+        userId = databaseBuilder.factory.buildUser().id;
+        organizationId = databaseBuilder.factory.buildOrganization().id;
+        const otherOrganizationId = databaseBuilder.factory.buildOrganization().id;
+        schoolingRegistrationInOtherOrganization = databaseBuilder.factory.buildSchoolingRegistration({ organizationId: otherOrganizationId });
+        nationalStudentId = schoolingRegistrationInOtherOrganization.nationalStudentId;
+        await databaseBuilder.commit();
+
+        schoolingRegistrationFromFile = new SchoolingRegistration({
+          firstName: 'Lucy',
+          lastName: 'Handmade',
+          birthdate: '1990-12-31',
+          nationalStudentId,
+          organizationId,
+        });
+
+        schoolingRegistrations = [schoolingRegistrationFromFile];
+      });
+
+      afterEach(() => {
+        return knex('schooling-registrations').delete();
+      });
+
+      it('should create and reconcile thanks to another schoolingRegistration', async () => {
+        // given
+        studentRepository.findReconciledStudentsByNationalStudentId
+          .resolves([new Student({ nationalStudentId, accounts: [{ userId }] })]);
+
+        // when
+        await schoolingRegistrationRepository.addOrUpdateOrganizationSchoolingRegistrations(schoolingRegistrations, organizationId);
+
+        // then
+        const newSchoolingRegistration = await knex('schooling-registrations').where({ organizationId, nationalStudentId });
+        expect(newSchoolingRegistration[0].userId).to.equal(userId);
+      });
+
+      it('should update and reconcile thanks to another schoolingRegistration', async () => {
+        // given
+        databaseBuilder.factory.buildSchoolingRegistration({ organizationId, nationalStudentId, userId: null });
+        await databaseBuilder.commit();
+        studentRepository.findReconciledStudentsByNationalStudentId
+          .resolves([new Student({ nationalStudentId, accounts: [{ userId }] })]);
+
+        // when
+        await schoolingRegistrationRepository.addOrUpdateOrganizationSchoolingRegistrations(schoolingRegistrations, organizationId);
+
+        // then
+        const newSchoolingRegistration = await knex('schooling-registrations').where({ organizationId, nationalStudentId });
+        expect(newSchoolingRegistration[0].userId).to.equal(userId);
+        expect(newSchoolingRegistration[0].firstName).to.equal(schoolingRegistrationFromFile.firstName);
+      });
+
+      context('when userId is already define for a schoolingRegistration', () => {
+
+        it('should update but not override userId', async () => {
+          // given
+          const expectedUserId = databaseBuilder.factory.buildSchoolingRegistration({ organizationId, nationalStudentId }).userId;
+          await databaseBuilder.commit();
+          studentRepository.findReconciledStudentsByNationalStudentId.resolves([ new Student({ nationalStudentId, accounts: [{ userId: 1 }, { userId }] })]);
+
+          // when
+          await schoolingRegistrationRepository.addOrUpdateOrganizationSchoolingRegistrations(schoolingRegistrations, organizationId);
+
+          // then
+          const alreadyReconciledSchoolingRegistrations = await knex('schooling-registrations').where({ 'nationalStudentId': schoolingRegistrationFromFile.nationalStudentId });
+          expect(alreadyReconciledSchoolingRegistrations[0].userId).to.equal(expectedUserId);
+          expect(alreadyReconciledSchoolingRegistrations[0].firstName).to.equal(schoolingRegistrationFromFile.firstName);
+        });
+      });
     });
 
     context('when there are schoolingRegistrations to create and schoolingRegistrations to update', () => {
@@ -703,11 +787,11 @@ describe('Integration | Infrastructure | Repository | schooling-registration-rep
 
       describe('When schoolingRegistration is filtered by user connexion type' , () => {
         let organizationId;
-      
+
         beforeEach(async () => {
           // given
           organizationId = databaseBuilder.factory.buildOrganization().id;
-  
+
           databaseBuilder.factory.buildSchoolingRegistrationWithUser({ organizationId, lastName: 'Rambo', user: { email: 'john@rambo.com',  username: null } });
           databaseBuilder.factory.buildSchoolingRegistrationWithUser({ organizationId, lastName: 'Willis', user: { email: null, username: 'willy' } });
           databaseBuilder.factory.buildSchoolingRegistrationWithUser({ organizationId, lastName: 'Norris', user: { email: null, username: null, samlId: 'chucky' } });
@@ -721,7 +805,7 @@ describe('Integration | Infrastructure | Repository | schooling-registration-rep
             organizationId,
             filter: { connexionType: 'none' },
           });
-  
+
           // then
           expect(_.map(data, 'lastName')).to.deep.equal(['Lee']);
         });
@@ -732,18 +816,18 @@ describe('Integration | Infrastructure | Repository | schooling-registration-rep
             organizationId,
             filter: { connexionType: 'identifiant' },
           });
-  
+
           // then
           expect(_.map(data, 'lastName')).to.deep.equal(['Willis']);
         });
-      
+
         it('should return school registrations filtered by "email" user connexion', async () => {
           // when
           const { data } = await schoolingRegistrationRepository.findPaginatedFilteredSchoolingRegistrations({
             organizationId,
             filter: { connexionType: 'email' },
           });
-  
+
           // then
           expect(_.map(data, 'lastName')).to.deep.equal(['Rambo']);
         });
@@ -754,7 +838,7 @@ describe('Integration | Infrastructure | Repository | schooling-registration-rep
             organizationId,
             filter: { connexionType: 'mediacentre' },
           });
-  
+
           // then
           expect(_.map(data, 'lastName')).to.deep.equal(['Norris']);
         });
