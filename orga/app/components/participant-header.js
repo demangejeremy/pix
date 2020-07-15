@@ -1,10 +1,8 @@
 import Component from '@ember/component';
-import { computed } from '@ember/object';
 import { htmlSafe } from '@ember/string';
 
-export default Component.extend({
-
-  progressBarStyle: computed('campaignParticipation.campaignParticipationResult.percentageProgression', function() {
+export default class ParticipantHeaderComponent extends Component {
+  get progressBarStyle() {
     return htmlSafe(`width: ${this.campaignParticipation.campaignParticipationResult.get('percentageProgression')}px`);
-  }),
-});
+  }
+}

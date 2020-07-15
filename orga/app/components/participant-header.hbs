@@ -1,0 +1,86 @@
+<header class="profile__header">
+  <PreviousPageButton
+          @route="authenticated.campaigns.details.participants"
+          @routeId={{@campaign.id}}
+          @aria-label="Retourner au détail de la campagne"
+          @title-class="profile-page-header__title"
+  >
+    {{@campaign.name}}
+  </PreviousPageButton>
+</header>
+
+<section class="profile-user panel">
+  <header class="profile-user__header">
+    <h2 class="profile-user__name">
+      {{@campaignParticipation.user.firstName}} {{@campaignParticipation.user.lastName}}
+    </h2>
+  </header>
+
+  <div class="profile-user__information">
+    <ul class="profile-user-data">
+      {{#if @campaignParticipation.participantExternalId}}
+        <li class="profile-user-data__content">
+          <div class="profile-user-data__content--label">{{@campaign.idPixLabel}}</div>
+          <div class="profile-user-data__content--text">{{@campaignParticipation.participantExternalId}}</div>
+        </li>
+      {{/if}}
+      <li class="profile-user-data__content">
+        <div class="profile-user-data__content--label">Avancement</div>
+        <div aria-label="Avancement" class="content-text">
+          {{@campaignParticipation.campaignParticipationResult.percentageProgression}}%
+          <div class="participant-content__progress-bar progress-bar">
+            {{#if @campaignParticipation.campaignParticipationResult.isCompleted}}
+              <div class="participant-content__progress-bar progress-bar progress-bar--completed"></div>
+            {{else}}
+              <div class="progress-bar progress-bar--completion" style={{this.progressBarStyle}}></div>
+            {{/if}}
+          </div>
+        </div>
+      </li>
+      <li class="profile-user-data__content">
+        <div class="profile-user-data__content--label">Commencé le</div>
+        <div class="profile-user-data__content--text">{{moment-format @campaignParticipation.createdAt 'DD MMM YYYY'}}</div>
+      </li>
+      <li class="profile-user-data__content">
+        <div class="profile-user-data__content--label">Envoyé le</div>
+        {{#if @campaignParticipation.sharedAt}}
+          <div class="profile-user-data__content--text">{{moment-format @campaignParticipation.sharedAt 'DD MMM YYYY'}}</div>
+        {{else}}
+          <div class="profile-user-data__content--text">Non disponible</div>
+        {{/if}}
+      </li>
+    </ul>
+
+    {{#if @campaignParticipation.isShared}}
+      <ul class="profile-user-data profile-user-data--highlight">
+        <li class="profile-user-data__content">
+          <div class="profile-user-data__content--label">Acquis validés</div>
+          <span class="profile-user-data--highlight-bold">{{@campaignParticipation.campaignParticipationResult.validatedSkillsCount}}</span>
+        </li>
+        <li class="profile-user-data__content">
+          <div class="profile-user-data__content--label">Acquis évalués</div>
+          <span class="profile-user-data--highlight-bold">{{@campaignParticipation.campaignParticipationResult.totalSkillsCount}}</span>
+        </li>
+        <li class="profile-user-data__content" style="flex-direction: row; align-items: center">
+          <div class="content-text content-text--big content-text--bold" style="margin-right: 10px">Résultat</div>
+          <CircleChart @value={{@campaignParticipation.campaignParticipationResult.masteryPercentage}}>
+                <span class="profile-user-data--highlight-bold">
+                  {{@campaignParticipation.campaignParticipationResult.masteryPercentage}}%
+                </span>
+          </CircleChart>
+        </li>
+      </ul>
+    {{/if}}
+  </div>
+</section>
+
+<div class="panel campaign-details__controls">
+  <nav class="navbar campaign-details-controls__navbar-tabs">
+    <LinkTo @route="authenticated.campaigns.participant.results" class="navbar-item" @models={{array @campaign.id @campaignParticipation.id}}>
+      Résultats
+    </LinkTo>
+    <LinkTo @route="authenticated.campaigns.participant.analysis" class="navbar-item" @models={{array @campaign.id @campaignParticipation.id}}>
+      Analyse
+    </LinkTo>
+  </nav>
+</div>
