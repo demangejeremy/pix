@@ -44,7 +44,7 @@ export default class ListController extends Controller {
       { value: 'identifiant', label: CONNEXION_TYPES.identifiant },
       { value: 'mediacentre', label: CONNEXION_TYPES.mediacentre },
     ];
-  } 
+  }
 
   @action
   async importStudents(file) {
@@ -64,12 +64,12 @@ export default class ListController extends Controller {
 
     } catch (errorResponse) {
       this.set('isLoading', false);
-      
-      this.handleError(errorResponse);
+
+      this._handleError(errorResponse);
     }
   }
 
-  handleError(errorResponse) {
+  _handleError(errorResponse) {
     const globalErrorMessage = 'Quelque chose s\'est mal passé. Veuillez réessayer.';
     if (!errorResponse.body.errors) {
       return this.get('notifications').sendError(globalErrorMessage);
