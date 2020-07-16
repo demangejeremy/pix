@@ -17,6 +17,7 @@
   },
   "page-title": {
     "certifications-start": "Rejoindre une session de certification",
+    "assessments-certification": "Certification {certificationNumber}",
     "signin": "Connexion",
     "signup": "Inscription",
     "suffix": "Pix",
