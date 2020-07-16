@@ -117,7 +117,9 @@ const competence_3 = domainBuilder.buildCompetence({ id: 'competence_3', index: 
 const competence_4 = domainBuilder.buildCompetence({ id: 'competence_4', index: '4.4', area: { code: '4' }, name: 'Résoudre' });
 const competence_5 = domainBuilder.buildCompetence({ id: 'competence_5', index: '5.5', area: { code: '5' }, name: 'Chercher' });
 const competence_6 = domainBuilder.buildCompetence({ id: 'competence_6', index: '6.6', area: { code: '6' }, name: 'Trouver' });
-const competencesFromAirtable = [ competence_1, competence_2, competence_3, competence_4, competence_5, competence_6 ];
+const nonPixCompetence = domainBuilder.buildCompetence({ id: 'non-pix-competence', index: '7.7', area: { code: '7' }, name: 'Vendre', origin: 'non-pix' });
+const allCompetencesFromAirtable = [ competence_1, competence_2, competence_3, competence_4, competence_5, competence_6, nonPixCompetence ];
+const pixCompetencesOnlyFromAirtable = [ competence_1, competence_2, competence_3, competence_4, competence_5, competence_6 ];
 
 const userCompetences = [
   _buildUserCompetence(competence_1, pixForCompetence1, 1),
@@ -201,13 +203,14 @@ describe('Unit | Service | Certification Result Service', function() {
           certificationChallenges: challenges,
         });
 
-        sinon.stub(competenceRepository, 'list').resolves(competencesFromAirtable);
+        sinon.stub(competenceRepository, 'list').resolves(allCompetencesFromAirtable);
+        sinon.stub(competenceRepository, 'listPixCompetencesOnly').resolves(pixCompetencesOnlyFromAirtable);
         sinon.stub(challengeRepository, 'findOperative').resolves(challengesFromAirTable);
         sinon.stub(userService, 'getCertificationProfile').withArgs({
           userId: certificationAssessment.userId,
           limitDate: certificationAssessment.createdAt,
           isV2Certification: certificationAssessment.isV2Certification,
-          competences: competencesFromAirtable,
+          competences: allCompetencesFromAirtable,
         }).resolves({ userCompetences });
       });
 
@@ -398,22 +401,16 @@ describe('Unit | Service | Certification Result Service', function() {
               ...competenceWithMarks_4_4,
             }];
 
-            const userCompetencesWithNonPixCompetence = userCompetences.concat(_buildUserCompetence(competence_5, 50, 5));
+            const userCompetencesWithNonPixCompetence = userCompetences.concat(_buildUserCompetence(nonPixCompetence, 50, 5));
             userService.getCertificationProfile.withArgs({
               userId: certificationAssessment.userId,
               limitDate: certificationAssessment.createdAt,
               isV2Certification: certificationAssessment.isV2Certification,
-              competences: competencesFromAirtable,
+              competences: allCompetencesFromAirtable,
             }).resolves({ userCompetences: userCompetencesWithNonPixCompetence });
 
             // when
             const result = await certificationResultService.getCertificationResult({ certificationAssessment: certificationAssessment, continueOnError });
-
-            //console.log({ 'USERCOMPETENCES':userCompetencesWithNonPixCompetence });
-
-            console.log({ 'RESULT': result });
-
-            console.log({ 'RESULTCOMP': result.competencesWithMark });
 
             // then
             expect(result.competencesWithMark).to.deep.equal(expectedCertifiedCompetences);
@@ -666,7 +663,7 @@ describe('Unit | Service | Certification Result Service', function() {
                 userId: certificationAssessment.userId,
                 limitDate: certificationAssessment.createdAt,
                 isV2Certification: certificationAssessment.isV2Certification,
-                competences: competencesFromAirtable,
+                competences: allCompetencesFromAirtable,
               }).resolves({ userCompetences });
 
               // When
@@ -690,13 +687,13 @@ describe('Unit | Service | Certification Result Service', function() {
       beforeEach(() => {
         certificationAssessment.certificationAnswersByDate = wrongAnswersForAllChallenges();
         certificationAssessment.certificationChallenges = challenges;
-        sinon.stub(competenceRepository, 'list').resolves(competencesFromAirtable);
+        sinon.stub(competenceRepository, 'list').resolves(allCompetencesFromAirtable);
         sinon.stub(challengeRepository, 'findOperative').resolves(challengesFromAirTable);
         sinon.stub(userService, 'getCertificationProfile').withArgs({
           userId: certificationAssessment.userId,
           limitDate: certificationAssessment.createdAt,
           isV2Certification: certificationAssessment.isV2Certification,
-          competences: competencesFromAirtable,
+          competences: allCompetencesFromAirtable,
         }).resolves({ userCompetences });
       });
 
@@ -1012,7 +1009,7 @@ describe('Unit | Service | Certification Result Service', function() {
             userId: certificationAssessment.userId,
             limitDate: certificationAssessment.createdAt,
             isV2Certification: certificationAssessment.isV2Certification,
-            competences: competencesFromAirtable,
+            competences: allCompetencesFromAirtable,
           }).resolves({ userCompetences });
 
         });
