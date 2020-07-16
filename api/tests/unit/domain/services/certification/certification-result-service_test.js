@@ -268,30 +268,6 @@ describe('Unit | Service | Certification Result Service', function() {
           // then
           expect(result.competencesWithMark).to.deep.equal(expectedCertifiedCompetences);
         });
-
-        describe('When a user is certifiable for a non pix competence', () => {
-          it('Doesn\'t show the non pix competence in the result', async () => {
-            const userCompetencesWithNonPixCompetence = userCompetences.concat(_buildUserCompetence(competence_5, 50, 5));
-            userService.getCertificationProfile.withArgs({
-              userId: startedCertificationAssessment.userId,
-              limitDate: startedCertificationAssessment.createdAt,
-              isV2Certification: startedCertificationAssessment.isV2Certification,
-              competences: competencesFromAirtable,
-            }).resolves({ userCompetencesWithNonPixCompetence });
-    
-            // when
-            const result = await certificationResultService.getCertificationResult({ certificationAssessment: startedCertificationAssessment, continueOnError});
-    
-            console.log({'USERCOMPETENCES':userCompetencesWithNonPixCompetence });
-    
-            console.log({'RESULT': result });
-
-            console.log({'RESULTCOMP': result.competencesWithMark });
-    
-            // then
-            expect(result.competencesWithMark).to.deep.equal(expectedCertifiedCompetences);        
-          });
-        });
       });
 
       context('when reproducibility rate is < 50%', () => {
@@ -400,6 +376,48 @@ describe('Unit | Service | Certification Result Service', function() {
 
           // then
           expect(result.competencesWithMark).to.deep.equal(expectedCertifiedCompetences);
+        });
+
+        describe('When a user is certifiable for a non pix competence', () => {
+          xit('Show only pix competences in the result', async () => {
+            // given
+            certificationAssessment.certificationAnswersByDate = answersToHaveOnlyTheLastCompetenceFailed();
+            const expectedCertifiedCompetences = [{
+              ...competenceWithMarks_1_1,
+              obtainedLevel: 1,
+              obtainedScore: pixForCompetence1,
+            }, {
+              ...competenceWithMarks_2_2,
+              obtainedLevel: 2,
+              obtainedScore: pixForCompetence2,
+            }, {
+              ...competenceWithMarks_3_3,
+              obtainedLevel: 3,
+              obtainedScore: pixForCompetence3,
+            }, {
+              ...competenceWithMarks_4_4,
+            }];
+
+            const userCompetencesWithNonPixCompetence = userCompetences.concat(_buildUserCompetence(competence_5, 50, 5));
+            userService.getCertificationProfile.withArgs({
+              userId: certificationAssessment.userId,
+              limitDate: certificationAssessment.createdAt,
+              isV2Certification: certificationAssessment.isV2Certification,
+              competences: competencesFromAirtable,
+            }).resolves({ userCompetences: userCompetencesWithNonPixCompetence });
+
+            // when
+            const result = await certificationResultService.getCertificationResult({ certificationAssessment: certificationAssessment, continueOnError });
+
+            //console.log({ 'USERCOMPETENCES':userCompetencesWithNonPixCompetence });
+
+            console.log({ 'RESULT': result });
+
+            console.log({ 'RESULTCOMP': result.competencesWithMark });
+
+            // then
+            expect(result.competencesWithMark).to.deep.equal(expectedCertifiedCompetences);
+          });
         });
       });
 
