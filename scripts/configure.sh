@@ -3,8 +3,13 @@
 set -e
 set -o pipefail
 
+<<<<<<< HEAD
 EXPECTED_NODE_VERSION="v14.15.1"
 EXPECTED_NPM_VERSION="6.14.8"
+=======
+EXPECTED_NODE_VERSION="v12.18.4"
+EXPECTED_NPM_VERSION="6.14.6"
+>>>>>>> 81917612a (Changement dans la configuration)
 
 function display_banner() {
   echo "                                                    "
