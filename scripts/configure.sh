@@ -4,7 +4,7 @@ set -e
 set -o pipefail
 
 EXPECTED_NODE_VERSION="v14.15.1"
-EXPECTED_NPM_VERSION="6.14.8"
+EXPECTED_NPM_VERSION="6.14.6"
 
 function display_banner() {
   echo "                                                    "
