@@ -3,13 +3,8 @@
 set -e
 set -o pipefail
 
-<<<<<<< HEAD
 EXPECTED_NODE_VERSION="v14.15.1"
 EXPECTED_NPM_VERSION="6.14.8"
-=======
-EXPECTED_NODE_VERSION="v12.18.4"
-EXPECTED_NPM_VERSION="6.14.6"
->>>>>>> 81917612a (Changement dans la configuration)
 
 function display_banner() {
   echo "                                                    "
@@ -147,5 +142,5 @@ verify_prerequesite_programs
 generate_environment_config_file
 install_apps_dependencies
 setup_and_run_infrastructure
-execute_apps_tests
+# execute_apps_tests
 display_footer
