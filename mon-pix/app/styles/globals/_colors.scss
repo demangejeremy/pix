@@ -1,13 +1,13 @@
 // See https://zeroheight.com/8dd127da7/p/839645-couleurs/b/21317a
 
 // primary
-$blue: #3D68FF;
+$blue: #ce2026;
 $blue-zodiac: #505F79;
 $white: #ffffff;
 
 // secondary
 $blue-hover: darken($blue, 4%);
-$dark-blue-pro: #1A38A0;
+$dark-blue-pro: #ce2026;
 $green-certif: #1A8C89;
 $dark-orga: #0095C0;
 $orga: #00DDFF;
@@ -17,12 +17,12 @@ $red: #D63F00;
 $red-hover: darken($red, 4%);
 $yellow: #FFBE00;
 $yellow-hover: darken($yellow, 8%);
-$light-blue: #388AFF;
+$light-blue: #ce2026;
 $pure-orange: #f45c00;
 
 // gradients
-$blue-gradient: linear-gradient(135deg, #12A3FF 0%, #3D68FF 100%);
-$default-gradient: linear-gradient(135deg, #388AFF 0%, #985FFF 100%);
+$blue-gradient: linear-gradient(135deg, #ce2026 0%, #ce2026 100%);
+$default-gradient: linear-gradient(135deg, #ce2026 0%, #AC008D 100%);
 $green-gradient: linear-gradient(0deg, #52D987 0%, #1A8C89 100%);
 $pix-orange-gradient: linear-gradient(180deg, #F24645 0%, #F1A141 100%);
 $pix-orga-gradient: linear-gradient(134deg, #00DDFF 0%, #0095C0 100%);
@@ -56,9 +56,9 @@ $grey-200: #07142E;
 
 // solids
 $environment-dark: #5E2563;
-$environment-light: #564DA6;
-$communication-dark: #3D68FF;
-$communication-light: #12A3FF;
+$environment-light: #ce2026;
+$communication-dark: #ce2026;
+$communication-light: #ce2026;
 $content-dark: #1A8C89;
 $content-light: #52D987;
 $information-dark: #F24645;
